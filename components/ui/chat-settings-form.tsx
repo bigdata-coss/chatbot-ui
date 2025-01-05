@@ -50,20 +50,20 @@ export const ChatSettingsForm: FC<ChatSettingsFormProps> = ({
         />
       </div>
 
-      <div className="space-y-1">
-        <Label>Prompt</Label>
+      {/*<div className="space-y-1">*/}
+      {/*  <Label>Prompt</Label>*/}
 
-        <TextareaAutosize
-          className="bg-background border-input border-2"
-          placeholder="You are a helpful AI assistant."
-          onValueChange={prompt => {
-            onChangeChatSettings({ ...chatSettings, prompt });
-          }}
-          value={chatSettings.prompt}
-          minRows={3}
-          maxRows={6}
-        />
-      </div>
+      {/*  <TextareaAutosize*/}
+      {/*    className="bg-background border-input border-2"*/}
+      {/*    placeholder="You are a helpful AI assistant."*/}
+      {/*    onValueChange={prompt => {*/}
+      {/*      onChangeChatSettings({ ...chatSettings, prompt });*/}
+      {/*    }}*/}
+      {/*    value={chatSettings.prompt}*/}
+      {/*    minRows={3}*/}
+      {/*    maxRows={6}*/}
+      {/*  />*/}
+      {/*</div>*/}
 
       {useAdvancedDropdown ? (
         <AdvancedSettings>

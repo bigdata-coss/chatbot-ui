@@ -220,6 +220,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
       {activeUserId && detailData.length > 0 && (
         <div className="mt-4">
           <h2 className="text-xl font-bold">세부정보 </h2>
+          <div className="max-h-[500px] overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -319,6 +320,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
               ))}
             </TableBody>
           </Table>
+        </div>
         </div>
       )}
     </div>
