@@ -19,7 +19,7 @@ import { LLMID } from '@/types';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ReactNode, useContext, useEffect, useState } from 'react';
 import Loading from '../loading';
-import { getGameResultByUserID, getGameResults } from '@/db/games';
+import { getGameResults } from '@/db/games';
 
 interface WorkspaceLayoutProps {
   children: ReactNode;

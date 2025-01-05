@@ -25,6 +25,9 @@ export const GameResult: FC<GameResultProps> = ({}) => {
   const [loading, setLoading] = useState(true);
   const [detailData, setDetailData] = useState<any[]>([]);
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
+  const [activieQuestionId, setActiveQuestionId] = useState<string | null>(
+    null
+  );
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [isContextExpanded, setIsContextExpanded] = useState(false);
   const [isReasponseExpanded, setIsResponseExpanded] = useState(false);
@@ -44,12 +47,18 @@ export const GameResult: FC<GameResultProps> = ({}) => {
 
         const updatedUserResults: any[] = [];
         for (const gameResult of gameResults) {
+          const question_id = gameResult.question_id;
           const user_id: string = gameResult.user_id.toString().trim();
           const profile = await getProfileByUserId(user_id);
 
-          if (!updatedUserResults.find(user => user.id === profile.id)) {
+          if (
+            !updatedUserResults.find(
+              user => user.question_id === gameResult.question_id
+            )
+          ) {
             updatedUserResults.push({
               id: profile.id,
+              question_id: gameResult.question_id,
               name: profile.display_name,
               team: profile.team,
               department: profile.department,
@@ -59,7 +68,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
             });
           } else {
             const user = updatedUserResults.find(
-              user => user.id === profile.id
+              user => user.question_id === gameResult.question_id
             );
             if (user) {
               user.score += gameResult.score;
@@ -80,21 +89,28 @@ export const GameResult: FC<GameResultProps> = ({}) => {
     fetchGameResult();
   }, []);
 
-  const handleDetailClick = async (userId: string) => {
+  const handleDetailClick = async (userId: string, question_id: string) => {
     if (activeUserId === userId) {
       setActiveUserId(null);
       setDetailData([]);
       return;
     }
 
+    if (activieQuestionId === question_id) {
+      setActiveQuestionId(null);
+      setDetailData([]);
+    }
+
     setLoading(true);
     try {
       const gameResults = await getGameResultByGameType(gameTypeString);
       const userDetails = gameResults.filter(
-        (result: any) => result.user_id === userId
+        (result: any) =>
+          result.user_id === userId && result.question_id === question_id
       );
       setDetailData(userDetails);
       setActiveUserId(userId);
+      setActiveQuestionId(question_id);
     } catch (error) {
       console.error('Failed to fetch user details:', error);
     } finally {
@@ -147,9 +163,14 @@ export const GameResult: FC<GameResultProps> = ({}) => {
                   <TableCell className="text-right">
                     <button
                       className="text-blue-500 hover:underline"
-                      onClick={() => handleDetailClick(user.user_id)}
+                      onClick={() =>
+                        handleDetailClick(user.user_id, user.question_id)
+                      }
                     >
-                      {activeUserId === user.user_id ? '닫기' : '보기'}
+                      {activeUserId === user.user_id &&
+                      activieQuestionId == user.question_id
+                        ? '닫기'
+                        : '보기'}
                     </button>
                   </TableCell>
                 </TableRow>
@@ -171,76 +192,98 @@ export const GameResult: FC<GameResultProps> = ({}) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Question</TableHead>
-                <TableHead>Prompt</TableHead>
-                <TableHead>context</TableHead>
-                <TableHead>File</TableHead>
-                <TableHead>Response</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>Reasoning</TableHead>
+                {gameTypeString == 'finetuning' && (
+                  <>
+                    <TableHead>Question</TableHead>
+                    <TableHead>Prompt</TableHead>
+                    <TableHead>Context</TableHead>
+                    <TableHead>File</TableHead>
+                    <TableHead>Response</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Reasoning</TableHead>
+                  </>
+                )}
+                {gameTypeString === 'jailbreaking' && (
+                  <>
+                    <TableHead>Question ID</TableHead>
+                    <TableHead>Score</TableHead>
+                  </>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {detailData.map((detail, index) => (
                 <TableRow key={index}>
-                  <TableCell>{detail.question}</TableCell>
-                  <TableCell>
-                    {isPromptExpanded
-                      ? detail.prompt
-                      : truncateText(detail.prompt, 50)}
-                    <button
-                      className="ml-2 text-blue-500 hover:underline"
-                      onClick={() => setIsPromptExpanded(!isPromptExpanded)}
-                    >
-                      {isPromptExpanded ? '간략히' : '더보기'}
-                    </button>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      {isContextExpanded
-                        ? detail.context
-                        : truncateText(detail.context, 50)}
-                      <button
-                        className="ml-2 text-blue-500 hover:underline"
-                        onClick={() => setIsContextExpanded(!isContextExpanded)}
-                      >
-                        {isContextExpanded ? '간략히' : '더보기'}
-                      </button>
-                    </div>
-                  </TableCell>
+                  {gameTypeString === 'jailbreaking' && (
+                    <>
+                      <TableCell>{detail.question_id}</TableCell>
+                      <TableCell>{detail.score}</TableCell>
+                    </>
+                  )}
+                  {gameTypeString === 'finetuning' && (
+                    <>
+                      <TableCell>{detail.question}</TableCell>
+                      <TableCell>
+                        {isPromptExpanded
+                          ? detail.prompt
+                          : truncateText(detail.prompt, 50)}
+                        <button
+                          className="ml-2 text-blue-500 hover:underline"
+                          onClick={() => setIsPromptExpanded(!isPromptExpanded)}
+                        >
+                          {isPromptExpanded ? '간략히' : '더보기'}
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          {isContextExpanded
+                            ? detail.context
+                            : truncateText(detail.context, 50)}
+                          <button
+                            className="ml-2 text-blue-500 hover:underline"
+                            onClick={() =>
+                              setIsContextExpanded(!isContextExpanded)
+                            }
+                          >
+                            {isContextExpanded ? '간략히' : '더보기'}
+                          </button>
+                        </div>
+                      </TableCell>
 
-                  <TableCell>{detail.file}</TableCell>
-                  <TableCell>
-                    <div>
-                      {isReasponseExpanded
-                        ? detail.response
-                        : truncateText(detail.response, 50)}
-                      <button
-                        className="ml-2 text-blue-500 hover:underline"
-                        onClick={() =>
-                          setIsResponseExpanded(!isReasponseExpanded)
-                        }
-                      >
-                        {isReasponseExpanded ? '간략히' : '더보기'}
-                      </button>
-                    </div>
-                  </TableCell>
-                  <TableCell>{detail.score}</TableCell>
-                  <TableCell>
-                    <div>
-                      {isReasoningExpanded
-                        ? detail.reason
-                        : truncateText(detail.reason, 50)}
-                      <button
-                        className="ml-2 text-blue-500 hover:underline"
-                        onClick={() =>
-                          setIsReasoningExpanded(!isReasoningExpanded)
-                        }
-                      >
-                        {isReasoningExpanded ? '간략히' : '더보기'}
-                      </button>
-                    </div>
-                  </TableCell>
+                      <TableCell>{detail.file}</TableCell>
+                      <TableCell>
+                        <div>
+                          {isReasponseExpanded
+                            ? detail.response
+                            : truncateText(detail.response, 50)}
+                          <button
+                            className="ml-2 text-blue-500 hover:underline"
+                            onClick={() =>
+                              setIsResponseExpanded(!isReasponseExpanded)
+                            }
+                          >
+                            {isReasponseExpanded ? '간략히' : '더보기'}
+                          </button>
+                        </div>
+                      </TableCell>
+                      <TableCell>{detail.score}</TableCell>
+                      <TableCell>
+                        <div>
+                          {isReasoningExpanded
+                            ? detail.reason
+                            : truncateText(detail.reason, 50)}
+                          <button
+                            className="ml-2 text-blue-500 hover:underline"
+                            onClick={() =>
+                              setIsReasoningExpanded(!isReasoningExpanded)
+                            }
+                          >
+                            {isReasoningExpanded ? '간략히' : '더보기'}
+                          </button>
+                        </div>
+                      </TableCell>
+                    </>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

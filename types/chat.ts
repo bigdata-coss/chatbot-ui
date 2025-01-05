@@ -1,5 +1,6 @@
 import { Tables } from '@/supabase/types';
 import { ChatMessage, LLMID } from '.';
+import { UUID } from 'node:crypto';
 
 export interface ChatSettings {
   model: LLMID;
@@ -18,6 +19,7 @@ export interface ChatPayload {
   assistant: Tables<'assistants'> | null;
   messageFileItems: Tables<'file_items'>[];
   chatFileItems: Tables<'file_items'>[];
+  questionId: string | null;
 }
 
 export interface ChatAPIPayload {

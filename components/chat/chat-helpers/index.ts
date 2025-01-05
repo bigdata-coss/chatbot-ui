@@ -227,6 +227,7 @@ export const handleHostedChat = async (
   // console.log('formattedMessages: ', formattedMessages);
 
   const requestBody = {
+    question_id: payload.questionId,
     chatSettings: payload.chatSettings,
     messages: formattedMessages,
     customModelId: provider === 'custom' ? modelData.hostedId : '',

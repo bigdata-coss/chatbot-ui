@@ -8,9 +8,9 @@ import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completion
 import { getServerProfile } from '@/lib/server/server-chat-helpers';
 import { wrapOpenAI } from 'langsmith/wrappers';
 import { traceable } from 'langsmith/traceable';
+import { v4 as uuidv4 } from 'uuid';
 import {
   createGame,
-  getGameResultByUserID,
   getGameResultByUserIDAndGameIdAndType,
   updateGameQuestionCount,
   updateGameScore
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
   let DEPLOYMENT_ID = 'gpt-4o-mini';
   let KEY: string | null = 'dummy';
   let ENDPOINT = 'https://api.openai.com/v1';
-  let questionId = 0;
+  let questionNum = 0;
   let responseStream = true;
   try {
     const profile = await getServerProfile();
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       ENDPOINT = 'https://ryeon.elpai.org/v1/';
       KEY = 'dummy';
       DEPLOYMENT_ID = 'olympiad';
-      questionId = 0;
+      questionNum = 0;
       responseStream = false;
 
       const openai = wrapOpenAI(
@@ -180,34 +180,34 @@ export async function POST(request: Request) {
 
     switch (chatSettings.model) {
       case 'jailbreaking-model-1':
-        questionId = 1;
+        questionNum = 1;
         break;
       case 'jailbreaking-model-2':
-        questionId = 2;
+        questionNum = 2;
         break;
       case 'jailbreaking-model-3':
-        questionId = 3;
+        questionNum = 3;
         break;
       case 'jailbreaking-model-4':
-        questionId = 4;
+        questionNum = 4;
         break;
       case 'jailbreaking-model-5':
-        questionId = 5;
+        questionNum = 5;
         break;
       case 'jailbreaking-model-6':
-        questionId = 6;
+        questionNum = 6;
         break;
       case 'jailbreaking-model-7':
-        questionId = 7;
+        questionNum = 7;
         break;
       case 'jailbreaking-model-8':
-        questionId = 8;
+        questionNum = 8;
         break;
       case 'jailbreaking-model-9':
-        questionId = 9;
+        questionNum = 9;
         break;
       case 'jailbreaking-model-10':
-        questionId = 10;
+        questionNum = 10;
         break;
       default:
         return new Response(JSON.stringify({ message: 'Model not found' }), {
@@ -217,7 +217,7 @@ export async function POST(request: Request) {
 
     let game = (await getGameResultByUserIDAndGameIdAndType(
       profile.user_id,
-      questionId,
+      questionNum,
       game_type
     )) as TablesUpdate<'game_results'>;
     if (game) {
@@ -231,7 +231,8 @@ export async function POST(request: Request) {
       await createGame({
         name: chatSettings.model,
         created_at: new Date().toISOString(),
-        question_id: questionId,
+        question_id: uuidv4(),
+        question_num: questionNum,
         question_count: 0,
         keyword: keyword,
         game_type: game_type,
@@ -242,7 +243,7 @@ export async function POST(request: Request) {
 
       game = (await getGameResultByUserIDAndGameIdAndType(
         profile.user_id,
-        questionId,
+        questionNum,
         game_type
       )) as TablesUpdate<'game_results'>;
     }
@@ -253,7 +254,7 @@ export async function POST(request: Request) {
       if (message.role === 'system') {
         return {
           ...message,
-          content: getSystemMessage(keyword, questionId)
+          content: getSystemMessage(keyword, questionNum)
         };
       }
       return message;
@@ -261,7 +262,7 @@ export async function POST(request: Request) {
 
     console.log('messages', messages);
 
-    if (game?.score != null && questionId !== 0) {
+    if (game?.score != null && questionNum !== 0) {
       // Check if the game has already been completed
       return new Response(
         JSON.stringify({
@@ -284,10 +285,10 @@ export async function POST(request: Request) {
 
     if (matchKeyword(keyword, latestUserMessage.content)) {
       console.log('correct answer');
-      console.log('questionId', questionId);
+      console.log('questionId', questionNum);
       console.log('question_count', game.question_count);
 
-      const baseScore = 10 * Math.pow(1.1, questionId - 1);
+      const baseScore = 10 * Math.pow(1.1, questionNum - 1);
       const extraPenalty = Math.max(game.question_count - 3, 0) * 0.5;
       console.log('baseScore', baseScore);
       console.log('extraPenalty', extraPenalty);

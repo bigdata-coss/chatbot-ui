@@ -1060,7 +1060,8 @@ export type Database = {
           id: string;
           name: string;
           folder_id: string | null;
-          question_id: number;
+          question_id: string;
+          question_num: number;
           question_count: number;
           keyword: string;
           game_type: string;
@@ -1080,7 +1081,8 @@ export type Database = {
           id?: string;
           name: string;
           folder_id?: string | null;
-          question_id: number;
+          question_id?: string;
+          question_num?: number;
           question_count: number;
           keyword: string | null;
           game_type: string | null;
@@ -1100,7 +1102,8 @@ export type Database = {
           id?: string;
           name?: string;
           folder_id?: string | null;
-          question_id?: number;
+          question_id?: string;
+          question_num?: number;
           question_count?: number;
           keyword?: string;
           game_type?: string;

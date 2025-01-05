@@ -5,11 +5,7 @@ import OpenAI from 'openai';
 import { ChatCompletionCreateParamsBase } from 'openai/resources/chat/completions.mjs';
 import { getServerProfile } from '@/lib/server/server-chat-helpers';
 import { wrapOpenAI } from 'langsmith/wrappers';
-import {
-  createGame,
-  getGameResultByUserIDAndGameIdAndType,
-  updateGameResult
-} from '@/db/games';
+import { createGame } from '@/db/games';
 import { getFileById } from '@/db/files';
 export const runtime = 'nodejs';
 // export const runtime: ServerRuntime = 'edge';
@@ -18,6 +14,7 @@ export async function POST(request: Request) {
   const json = await request.json();
 
   let {
+    question_id,
     chatSettings,
     messages,
     customModelId,
@@ -26,6 +23,7 @@ export async function POST(request: Request) {
     context,
     file
   } = json as {
+    question_id: string;
     chatSettings: ChatSettings;
     messages: any[];
     customModelId: string;
@@ -34,6 +32,8 @@ export async function POST(request: Request) {
     context: string;
     file: string;
   };
+
+  console.log('question_id:', question_id);
 
   if (prompt.length > 5000) {
     prompt = prompt.substring(0, 4900) + '...';
@@ -51,12 +51,6 @@ export async function POST(request: Request) {
     const url = 'https://ryeon.elpai.org/submit/v1';
     const model = 'olympiad';
 
-    let game = (await getGameResultByUserIDAndGameIdAndType(
-      profile.user_id,
-      customModelIdInt,
-      'finetuning'
-    )) as TablesUpdate<'game_results'>;
-
     let fileName = file;
     if (file !== '') {
       file = file.trim();
@@ -65,36 +59,6 @@ export async function POST(request: Request) {
         //@ts-ignore
         fileName = fileDB.name;
       }
-    }
-    // Create a new game if it doesn't exist
-    if (game == null) {
-      console.log('createGame start');
-      await createGame({
-        name: chatSettings.model,
-        created_at: new Date().toISOString(),
-        question_id: customModelIdInt,
-        question_count: 0,
-        game_type: 'finetuning',
-        question: question,
-        prompt: prompt,
-        context: context,
-        file: fileName,
-        score: null,
-        updated_at: new Date().toISOString(),
-        user_id: profile.user_id
-      } as TablesInsert<'game_results'>);
-
-      game = (await getGameResultByUserIDAndGameIdAndType(
-        profile.user_id,
-        customModelIdInt,
-        'finetuning'
-      )) as TablesUpdate<'game_results'>;
-    }
-
-    if (!game.id || game.question_count === undefined) {
-      return new Response(JSON.stringify({ message: 'Game ID not found' }), {
-        status: 400
-      });
     }
 
     const openai = wrapOpenAI(
@@ -116,7 +80,6 @@ export async function POST(request: Request) {
       }
     );
 
-    // console.log('messages:', messages);
     const response = await openai.chat.completions.create({
       model: model,
       messages: messages as ChatCompletionCreateParamsBase['messages'],
@@ -126,27 +89,40 @@ export async function POST(request: Request) {
     });
 
     //@ts-ignore
-    let response_response = response.response;
+    let response_response = response.result.response;
+    console.log('response_response:', response_response);
     if (response_response.length > 5000) {
       response_response = response_response.substring(0, 4900) + '...';
     }
 
     //@ts-ignore
-    let response_reasoning = response.reasoning;
+    let response_reasoning = response.result.reasoning;
+    console.log('response_reasoning:', response_reasoning);
     if (response_reasoning.length > 5000) {
       response_reasoning = response_reasoning.substring(0, 4900) + '...';
     }
 
-    game.context = context;
-    game.file = fileName;
     //@ts-ignore
-    game.response = response_response;
-    //@ts-ignore
-    game.reason = response_reasoning;
-    //@ts-ignore
-    game.score = parseFloat(response.score);
+    let response_score = parseFloat(response.result.score);
 
-    await updateGameResult(game.id, game);
+    console.log('createGame:');
+    await createGame({
+      name: chatSettings.model,
+      created_at: new Date().toISOString(),
+      question_id: question_id.toString(),
+      question_num: 1,
+      question_count: 0,
+      game_type: 'finetuning',
+      question: question,
+      prompt: prompt,
+      context: context,
+      file: fileName,
+      score: response_score,
+      response: response_response,
+      reason: response_reasoning,
+      updated_at: new Date().toISOString(),
+      user_id: profile.user_id
+    } as TablesInsert<'game_results'>);
 
     return new Response(
       //@ts-ignore
