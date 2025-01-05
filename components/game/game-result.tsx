@@ -161,7 +161,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="mb-4 text-2xl font-bold">Leaderboard</h1>
+      <h1 className="mb-4 text-2xl font-bold">{gameTypeString.charAt(0).toUpperCase() + gameTypeString.slice(1)} Leaderboard</h1>
       {loading ? (
         <Loading />
       ) : (
