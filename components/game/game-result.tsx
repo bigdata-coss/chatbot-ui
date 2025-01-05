@@ -51,28 +51,50 @@ export const GameResult: FC<GameResultProps> = ({}) => {
           const user_id: string = gameResult.user_id.toString().trim();
           const profile = await getProfileByUserId(user_id);
 
-          if (
-            !updatedUserResults.find(
-              user => user.question_id === gameResult.question_id
-            )
-          ) {
-            updatedUserResults.push({
-              id: profile.id,
-              question_id: gameResult.question_id,
-              name: profile.display_name,
-              team: profile.team,
-              department: profile.department,
-              user_id: gameResult.user_id,
-              score: gameResult.score,
-              question_count: gameResult.question_count
-            });
+          if (gameTypeString === 'jailbreaking') {
+            if (!updatedUserResults.find(user => user.id === profile.id)) {
+              updatedUserResults.push({
+                id: profile.id,
+                name: profile.display_name,
+                team: profile.team,
+                department: profile.department,
+                user_id: gameResult.user_id,
+                score: gameResult.score,
+                question_count: gameResult.question_count
+              });
+            } else {
+              const user = updatedUserResults.find(
+                user => user.id === profile.id
+              );
+              if (user) {
+                user.score += gameResult.score;
+                user.question_count += gameResult.question_count;
+              }
+            }
           } else {
-            const user = updatedUserResults.find(
-              user => user.question_id === gameResult.question_id
-            );
-            if (user) {
-              user.score += gameResult.score;
-              user.question_count += gameResult.question_count;
+            if (
+              !updatedUserResults.find(
+                user => user.question_id === gameResult.question_id
+              )
+            ) {
+              updatedUserResults.push({
+                id: profile.id,
+                question_id: gameResult.question_id,
+                name: profile.display_name,
+                team: profile.team,
+                department: profile.department,
+                user_id: gameResult.user_id,
+                score: gameResult.score,
+                question_count: gameResult.question_count
+              });
+            } else {
+              const user = updatedUserResults.find(
+                user => user.question_id === gameResult.question_id
+              );
+              if (user) {
+                user.score += gameResult.score;
+                user.question_count += gameResult.question_count;
+              }
             }
           }
         }
@@ -103,14 +125,23 @@ export const GameResult: FC<GameResultProps> = ({}) => {
 
     setLoading(true);
     try {
-      const gameResults = await getGameResultByGameType(gameTypeString);
-      const userDetails = gameResults.filter(
-        (result: any) =>
-          result.user_id === userId && result.question_id === question_id
-      );
-      setDetailData(userDetails);
-      setActiveUserId(userId);
-      setActiveQuestionId(question_id);
+      if (gameTypeString === 'finetuning') {
+        const gameResults = await getGameResultByGameType(gameTypeString);
+        const userDetails = gameResults.filter(
+          (result: any) =>
+            result.user_id === userId && result.question_id === question_id
+        );
+        setDetailData(userDetails);
+        setActiveUserId(userId);
+        setActiveQuestionId(question_id);
+      } else if (gameTypeString === 'jailbreaking') {
+        const gameResults = await getGameResultByGameType(gameTypeString);
+        const userDetails = gameResults.filter(
+          (result: any) => result.user_id === userId
+        );
+        setDetailData(userDetails);
+        setActiveUserId(userId);
+      }
     } catch (error) {
       console.error('Failed to fetch user details:', error);
     } finally {
@@ -216,7 +247,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
                 <TableRow key={index}>
                   {gameTypeString === 'jailbreaking' && (
                     <>
-                      <TableCell>{detail.question_id}</TableCell>
+                      <TableCell>{detail.question_num}</TableCell>
                       <TableCell>{detail.score}</TableCell>
                     </>
                   )}
