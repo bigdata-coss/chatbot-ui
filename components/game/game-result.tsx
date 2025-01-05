@@ -165,6 +165,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
       {loading ? (
         <Loading />
       ) : (
+        <div className="max-h-[500px] overflow-auto">
         <Table>
           <TableCaption>Top Players</TableCaption>
           <TableHeader>
@@ -215,6 +216,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
             )}
           </TableBody>
         </Table>
+        </div>
       )}
 
       {activeUserId && detailData.length > 0 && (
@@ -237,7 +239,8 @@ export const GameResult: FC<GameResultProps> = ({}) => {
                 )}
                 {gameTypeString === 'jailbreaking' && (
                   <>
-                    <TableHead>Question ID</TableHead>
+                    <TableHead>level</TableHead>
+                    <TableHead>Keyword</TableHead>
                     <TableHead>Score</TableHead>
                   </>
                 )}
@@ -248,7 +251,8 @@ export const GameResult: FC<GameResultProps> = ({}) => {
                 <TableRow key={index}>
                   {gameTypeString === 'jailbreaking' && (
                     <>
-                      <TableCell>{detail.question_num}</TableCell>
+                      <TableCell>{detail.name}</TableCell>
+                      {detail.score && <TableCell>{detail.keyword}</TableCell>}
                       <TableCell>{detail.score}</TableCell>
                     </>
                   )}
