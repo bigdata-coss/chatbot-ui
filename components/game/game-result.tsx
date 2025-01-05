@@ -165,7 +165,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
       {loading ? (
         <Loading />
       ) : (
-        <div className="max-h-[500px] overflow-auto">
+        <div className="max-h-[350px] overflow-auto">
         <Table>
           <TableCaption>Top Players</TableCaption>
           <TableHeader>
@@ -222,7 +222,7 @@ export const GameResult: FC<GameResultProps> = ({}) => {
       {activeUserId && detailData.length > 0 && (
         <div className="mt-4">
           <h2 className="text-xl font-bold">세부정보 </h2>
-          <div className="max-h-[500px] overflow-auto">
+          <div className="max-h-[400px] overflow-auto">
           <Table>
             <TableHeader>
               <TableRow>
