@@ -70,14 +70,14 @@ export const getGameResultByID = async (id: string) => {
 
 export const getGameResultByUserIDAndGameIdAndType = async (
   userId: string,
-  questionId: number,
+  questionNum: number,
   gameType: string
 ) => {
   const { data: game } = await supabase
     .from('game_results')
     .select('*')
     .eq('user_id', userId)
-    .eq('question_id', questionId)
+    .eq('question_num', questionNum)
     .eq('game_type', gameType)
     .maybeSingle();
 
