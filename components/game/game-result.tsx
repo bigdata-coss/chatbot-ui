@@ -180,7 +180,15 @@ export const GameResult: FC<GameResultProps> = ({}) => {
           </TableHeader>
           <TableBody>
             {userResults.length > 0 ? (
-              userResults.map((user, index) => (
+              // userResults.map((user, index) => ( // 전체 공개
+                userResults
+                    .filter(user =>
+                        // finetuning일 경우 같은 팀만 표시, 그 외는 모두 표시
+                        gameTypeString === 'finetuning'
+                            ? user.team === profile?.team
+                            : true
+                    )
+                    .map((user, index) => (
                 <TableRow
                   key={user.id}
                   className={user.id === profile?.id ? 'bg-blue-700' : ''}
@@ -330,3 +338,4 @@ export const GameResult: FC<GameResultProps> = ({}) => {
     </div>
   );
 };
+
