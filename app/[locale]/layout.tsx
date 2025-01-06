@@ -12,10 +12,10 @@ import { ReactNode } from 'react';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
-const APP_NAME = 'Chatbot UI';
-const APP_DEFAULT_TITLE = 'Chatbot UI';
-const APP_TITLE_TEMPLATE = '%s - Chatbot UI';
-const APP_DESCRIPTION = 'Chabot UI PWA!';
+const APP_NAME = '전북대 올림피아드';
+const APP_DEFAULT_TITLE = '전북대 올림피아드';
+const APP_TITLE_TEMPLATE = '%s - 전북대 올림피아드';
+const APP_DESCRIPTION = '전북대 빅데이터 캠프 올림피아드';
 
 interface RootLayoutProps {
   children: ReactNode;

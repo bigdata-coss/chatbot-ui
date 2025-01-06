@@ -13,7 +13,7 @@ export default function HomePage() {
       {/* 헤더 */}
       <div className="mt-2 text-center text-4xl font-bold ">
         {/*<div className="mt-4 text-5xl font-extrabold text-blue-600 text-center">*/}
-        2024 동계 빅데이터 캠프에 오신 것을 환영합니다!
+        2025 동계 빅데이터 캠프에 오신 것을 환영합니다!
       </div>
 
       {/* 설명 */}
